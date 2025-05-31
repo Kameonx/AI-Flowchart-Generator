@@ -335,18 +335,30 @@ def text_to_image():
 
     normal_font_size = 18
     main_point_font_size = 22  # Bigger font for main points
-    font_path = None 
-    
+
+    font_dir = os.path.dirname(__file__)
+    dejavu_font_path = os.path.join(font_dir, "DejaVuSans.ttf")
+    dejavu_bold_font_path = os.path.join(font_dir, "DejaVuSans-Bold.ttf")
+
     try:
-        normal_font = ImageFont.truetype(font_path or "arial.ttf", normal_font_size)
-        # Use bold font for main points if available, otherwise just bigger
+        # Try bundled DejaVu fonts first (for server)
+        normal_font = ImageFont.truetype(dejavu_font_path, normal_font_size)
         try:
-            bold_font = ImageFont.truetype(font_path or "arialbd.ttf", main_point_font_size)
-        except:
-            bold_font = ImageFont.truetype(font_path or "arial.ttf", main_point_font_size)
+            bold_font = ImageFont.truetype(dejavu_bold_font_path, main_point_font_size)
+        except Exception:
+            bold_font = ImageFont.truetype(dejavu_font_path, main_point_font_size)
     except Exception:
-        normal_font = ImageFont.load_default()
-        bold_font = ImageFont.load_default()
+        try:
+            # Fallback to Arial (for local host)
+            normal_font = ImageFont.truetype("arial.ttf", normal_font_size)
+            try:
+                bold_font = ImageFont.truetype("arialbd.ttf", main_point_font_size)
+            except Exception:
+                bold_font = ImageFont.truetype("arial.ttf", main_point_font_size)
+        except Exception:
+            # Final fallback: PIL default font
+            normal_font = ImageFont.load_default()
+            bold_font = ImageFont.load_default()
     
     lines = text.split('\n')
     padding = 20
